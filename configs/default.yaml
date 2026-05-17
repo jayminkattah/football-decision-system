@@ -1,0 +1,11 @@
+project:
+  name: football-decision-system
+  version: 0.1.0
+
+paths:
+  raw_data: data/raw
+  interim_data: data/interim
+  processed_data: data/processed
+  backtest_outputs: outputs/backtests
+  evaluation_outputs: outputs/evaluation
+  figure_outputs: outputs/figures

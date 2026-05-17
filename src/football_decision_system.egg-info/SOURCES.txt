@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/fbsystem/__init__.py
+src/fbsystem/backtest/__init__.py
+src/fbsystem/data/__init__.py
+src/fbsystem/evaluation/__init__.py
+src/fbsystem/features/__init__.py
+src/fbsystem/models/__init__.py
+src/fbsystem/staking/__init__.py
+src/fbsystem/strategies/__init__.py
+src/fbsystem/utils/__init__.py
+src/football_decision_system.egg-info/PKG-INFO
+src/football_decision_system.egg-info/SOURCES.txt
+src/football_decision_system.egg-info/dependency_links.txt
+src/football_decision_system.egg-info/requires.txt
+src/football_decision_system.egg-info/top_level.txt
+tests/test_smoke.py

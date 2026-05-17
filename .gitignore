@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment files
+.env
+
+# Local data files
+data/raw/*
+data/interim/*
+data/processed/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Generated outputs
+outputs/backtests/*
+outputs/evaluation/*
+outputs/figures/*
+!outputs/backtests/.gitkeep
+!outputs/evaluation/.gitkeep
+!outputs/figures/.gitkeep
+
+# OS junk
+.DS_Store
+Thumbs.db
