@@ -1,102 +1,116 @@
-# Market-Calibrated Probabilistic Decision System
+# Football Decision System
 
-A portfolio-ready data science project that builds a risk-aware football match decision framework using betting markets as a real-world probabilistic test environment.
+I built this project to explore a question that is more interesting than simply predicting who will win a football match:
 
-This is **not a gambling bot**.
+> Can a model identify meaningful differences between its own probabilities and the probabilities implied by the betting market—and do those differences hold up when tested honestly over time?
 
-The project uses football betting markets because they provide something most toy ML projects do not: a noisy but highly informative external benchmark. The goal is not to “beat the bookies” with magic. The goal is to show how to build, test, evaluate, and communicate a disciplined probabilistic decision system under uncertainty.
+Football betting markets are useful for this because they provide a strong, real-world benchmark. The market already absorbs a huge amount of information, so outperforming it is difficult. That makes it a much better test of a probabilistic decision system than comparing a model with a weak or artificial baseline.
 
----
+This is not a gambling bot. It does not place bets, connect to bookmakers, or make claims about guaranteed profit. It is a data science project about probability, uncertainty, decision rules, and honest evaluation.
 
-## Project Summary
+## What the project does
 
-This project answers a practical decision science question:
+The pipeline:
 
-> Given historical football results, market odds, and a baseline predictive model, can we identify situations where our model probability differs meaningfully from the market-implied probability, then evaluate those decisions honestly through walk-forward backtesting?
+1. Loads historical football results and decimal odds.
+2. Cleans data from several source formats into one canonical match table.
+3. Removes the bookmaker margin to estimate market-implied probabilities.
+4. Trains a multinomial logistic-regression baseline using only pre-match information.
+5. Produces predictions with walk-forward validation, training only on seasons that occurred before the season being predicted.
+6. Calculates the difference between model and market probabilities.
+7. Selects outcomes whose estimated edge passes a transparent threshold.
+8. Simulates those decisions with a simple flat-stake policy.
+9. Reports predictive performance, return, drawdown, and consistency by season.
+10. Presents the saved results in a Streamlit dashboard.
 
-The system converts bookmaker odds into market-implied probabilities, trains a baseline probability model, calculates model-vs-market edge, selects opportunities through a simple strategy engine, simulates flat-stake decisions, and evaluates performance through walk-forward backtesting.
+The model is deliberately simple. The goal was to build the full decision and evaluation process correctly before experimenting with more complicated models.
 
-The final output is a Streamlit dashboard and a set of reproducible evaluation files.
+## What I found
 
----
+The current strategy does not beat the market—and I think that is an important part of the project rather than a result to hide.
 
-## Why This Project Exists
+Across the saved walk-forward backtest:
 
-Most beginner data science sports projects stop at predicting match outcomes.
+- 11,511 matches received out-of-sample predictions
+- 9,071 opportunities passed the 2% edge threshold
+- simulated ROI was approximately **-5.05%**
+- none of the four evaluated seasons was profitable
+- the model was slightly worse than the market on both log loss and Brier score
 
-That is fine, but incomplete.
+In other words, a model can produce probabilities that look reasonable and apparent positive edges without creating a profitable decision rule. That gap between prediction and action is the main lesson of the project.
 
-Real decision systems need more than predictions. They need:
-
-- calibrated probabilities
-- comparison against a strong external baseline
-- explicit decision rules
-- capital allocation logic
-- backtesting without future leakage
-- honest evaluation metrics
-- clear communication of limitations
-
-This project focuses on the full decision pipeline rather than just model accuracy.
-
----
-
-## Why Football Betting Markets?
-
-Football betting odds are useful here because they act as a market-based probability benchmark.
-
-Bookmakers and betting exchanges aggregate information from many sources, including team strength, injuries, form, public sentiment, and market activity. That makes the market difficult to beat, which is exactly why it is useful for a portfolio project.
-
-A weak benchmark makes a project look good cheaply. A strong benchmark makes the evaluation meaningful.
-
-The project uses the market as a test environment for probabilistic decision-making, not as encouragement to gamble.
-
----
-
-## Why This Is Not a Gambling Bot
-
-This project does **not** place bets.
-
-It does **not** connect to bookmaker APIs.
-
-It does **not** optimize for real-money deployment.
-
-It does **not** recommend gambling.
-
-Instead, it demonstrates a controlled data science workflow:
-
-1. Convert odds into probabilities.
-2. Build model probabilities.
-3. Compare model and market views.
-4. Apply transparent decision rules.
-5. Simulate outcomes historically.
-6. Evaluate results honestly.
-
-The betting market is simply the domain used to test probability calibration, edge estimation, and decision-making under uncertainty.
-
----
-
-## Repository Structure
+## Project structure
 
 ```text
 football-decision-system/
-├── dashboard/
-│   └── app.py
-├── data/
-│   ├── raw/
-│   └── processed/
-├── docs/
-│   ├── interview_talking_points.md
-│   ├── project_story.md
-│   └── reproducibility.md
-├── notebooks/
-├── outputs/
-│   ├── backtests/
-│   ├── evaluation/
-│   └── figures/
-├── scripts/
-├── src/
-│   └── fbsystem/
-├── tests/
-├── README.md
-├── pyproject.toml
-└── uv.lock
+|-- configs/       Project configuration
+|-- dashboard/     Streamlit application
+|-- data/          Raw, interim, processed, and external data locations
+|-- notebooks/     Inspection and analysis notebooks
+|-- outputs/       Backtest reports, evaluation tables, and figures
+|-- scripts/       Commands for running each pipeline stage
+|-- src/fbsystem/  Reusable data, modelling, strategy, and evaluation code
+|-- tests/         Automated tests
+|-- pyproject.toml
+`-- README.md
+```
+
+Data files and generated outputs are intentionally excluded from Git. Empty directory placeholders are included so the expected layout is still available after cloning.
+
+## Getting started
+
+The project requires Python 3.11 or newer. It uses [`uv`](https://docs.astral.sh/uv/) for dependency management.
+
+```bash
+git clone <repository-url>
+cd football-decision-system
+uv sync
+```
+
+Place the source football CSV files under `data/external/`, then run the pipeline from the repository root:
+
+```bash
+uv run python scripts/inspect_raw_data.py
+uv run python scripts/build_raw_dataset.py
+uv run python scripts/build_canonical_matches.py
+uv run python scripts/build_market_probabilities.py
+uv run python scripts/build_predictions.py
+uv run python scripts/build_strategy_opportunities.py
+uv run python scripts/build_bet_simulation.py
+uv run python scripts/build_backtest_summary.py
+uv run python scripts/build_evaluation_outputs.py
+```
+
+Each stage reads the artifact created by the previous stage and writes a new file under `data/processed/` or `outputs/`.
+
+## Run the dashboard
+
+Once the pipeline artifacts have been generated:
+
+```bash
+uv run streamlit run dashboard/app.py
+```
+
+The dashboard only reads saved artifacts. It does not retrain the model or recalculate results behind the scenes.
+
+## Run the tests
+
+```bash
+uv run pytest
+```
+
+The test suite covers data cleaning, market-probability calculations, modelling, walk-forward predictions, edge calculations, strategy selection, staking, simulation, and evaluation metrics.
+
+## Important limitations
+
+- The baseline largely recalibrates market probabilities; it is not yet an independent team-strength model.
+- The 2% edge threshold is a simple research rule rather than an optimized production parameter.
+- Historical odds do not capture every real-world execution constraint.
+- Liquidity, price movement, transaction costs, account restrictions, and market impact are not modelled.
+- A backtest—profitable or otherwise—is evidence about historical behavior, not a promise about the future.
+
+## Why I built it this way
+
+Many sports prediction projects stop after reporting accuracy. I wanted to go further and show the less glamorous parts of building a decision system: choosing a strong benchmark, preventing future leakage, translating probabilities into explicit actions, measuring downside, and being willing to report a negative result.
+
+For me, that is the more useful data science story. The point is not that the model discovered a secret way to beat football markets. The point is that the system makes its assumptions visible and gives us an honest way to find out whether an idea works.
